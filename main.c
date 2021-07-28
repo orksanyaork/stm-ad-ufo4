@@ -1,10 +1,10 @@
-/**
+п»ї/**
   ******************************************************************************
   * @file    main.c 
-  * @author  Орловский А.С.
+  * @author  РћСЂР»РѕРІСЃРєРёР№ Рђ.РЎ.
   * @version V1.0
   * @date    28.07.21
-  * @brief   Прошивка УФОЧ
+  * @brief   РџСЂРѕС€РёРІРєР° РЈР¤РћР§
   ******************************************************************************
   */ 
 
@@ -13,23 +13,23 @@
 void MCU_Init (void)
 {
   CLK_HSIPrescalerConfig(CLK_PRESCALER_HSIDIV1); // f = 16 MHz
-  // SPI, сначала шлем старший байт
+  // SPI, СЃРЅР°С‡Р°Р»Р° С€Р»РµРј СЃС‚Р°СЂС€РёР№ Р±Р°Р№С‚
 	SPI_Init (SPI_FIRSTBIT_MSB, SPI_BAUDRATEPRESCALER_2, SPI_MODE_MASTER, SPI_CLOCKPOLARITY_LOW, 
 	          SPI_CLOCKPHASE_1EDGE, SPI_DATADIRECTION_1LINE_TX, SPI_NSS_HARD, (uint8_t)0x07);
 	SPI_Cmd(ENABLE);
   // LD
 	GPIO_Init (GPIOC, GPIO_PIN_4, GPIO_MODE_IN_PU_NO_IT); // Input pull-up, no external interrupt     
-  // NSS (SYNC) для AD5141 (инверсная логика)
+  // NSS (SYNC) РґР»СЏ AD5141 (РёРЅРІРµСЂСЃРЅР°СЏ Р»РѕРіРёРєР°)
 	GPIO_Init (GPIOC, GPIO_PIN_2, GPIO_MODE_OUT_PP_HIGH_FAST); // Output push-pull, high level, 10MHz
-  // LE для ADF4351
+  // LE РґР»СЏ ADF4351
 	GPIO_Init (GPIOC, GPIO_PIN_1, GPIO_MODE_OUT_PP_LOW_FAST); // Output push-pull, high level, 10MHz
 }
 
-void write2adf4351(uint8_t firstByte, uint8_t secondByte, uint8_t thirdByte, uint8_t fourthByte) // запись в регистры ADF4351 via SPI
+void write2adf4351(uint8_t firstByte, uint8_t secondByte, uint8_t thirdByte, uint8_t fourthByte) // Р·Р°РїРёСЃСЊ РІ СЂРµРіРёСЃС‚СЂС‹ ADF4351 via SPI
 {
   GPIO_WriteHigh (GPIOC, GPIO_PIN_1); // LE
   SPI_SendData (firstByte);
-  while (SPI_GetFlagStatus(SPI_FLAG_TXE)== RESET) { // ждем пока буфер передачи станет пуст
+  while (SPI_GetFlagStatus(SPI_FLAG_TXE)== RESET) { // Р¶РґРµРј РїРѕРєР° Р±СѓС„РµСЂ РїРµСЂРµРґР°С‡Рё СЃС‚Р°РЅРµС‚ РїСѓСЃС‚
   }
   SPI_SendData (secondByte);
   while (SPI_GetFlagStatus(SPI_FLAG_TXE)== RESET) {
@@ -40,21 +40,21 @@ void write2adf4351(uint8_t firstByte, uint8_t secondByte, uint8_t thirdByte, uin
   SPI_SendData (fourthByte);
   while (SPI_GetFlagStatus(SPI_FLAG_TXE)== RESET) {
   }
-  while (SPI_GetFlagStatus(SPI_FLAG_BSY) == SET) { // ждем пока устройство занято
+  while (SPI_GetFlagStatus(SPI_FLAG_BSY) == SET) { // Р¶РґРµРј РїРѕРєР° СѓСЃС‚СЂРѕР№СЃС‚РІРѕ Р·Р°РЅСЏС‚Рѕ
   }
   GPIO_WriteLow (GPIOC, GPIO_PIN_1);
 }
 
-void write2ad5141(uint8_t firstByte, uint8_t secondByte) // запись в регистр AD5141 via SPI
+void write2ad5141(uint8_t firstByte, uint8_t secondByte) // Р·Р°РїРёСЃСЊ РІ СЂРµРіРёСЃС‚СЂ AD5141 via SPI
 {
   GPIO_WriteLow (GPIOC, GPIO_PIN_2); // SYNC
   SPI_SendData (firstByte);
-  while (SPI_GetFlagStatus(SPI_FLAG_TXE)== RESET) { // ждем пока буфер передачи станет пуст
+  while (SPI_GetFlagStatus(SPI_FLAG_TXE)== RESET) { // Р¶РґРµРј РїРѕРєР° Р±СѓС„РµСЂ РїРµСЂРµРґР°С‡Рё СЃС‚Р°РЅРµС‚ РїСѓСЃС‚
   }
   SPI_SendData (secondByte);
   while (SPI_GetFlagStatus(SPI_FLAG_TXE)== RESET) {
   }
-  while (SPI_GetFlagStatus(SPI_FLAG_BSY) == SET) { // ждем пока устройство занято
+  while (SPI_GetFlagStatus(SPI_FLAG_BSY) == SET) { // Р¶РґРµРј РїРѕРєР° СѓСЃС‚СЂРѕР№СЃС‚РІРѕ Р·Р°РЅСЏС‚Рѕ
   }
   GPIO_WriteHigh (GPIOC, GPIO_PIN_2);
 }
@@ -71,7 +71,7 @@ void main(void)
     write2adf4351(0x1A, 0x00, 0x4F, 0xC2); //R2
     write2adf4351(0x08, 0x00, 0x80, 0x11); //R1
     write2adf4351(0x00, 0x50, 0x00, 0x00); //R0
-  } while (GPIO_ReadInputPin (GPIOC, GPIO_PIN_4) != 1); //пытаемся записать значение в SPI, пока lock detect не станет равен 1
+  } while (GPIO_ReadInputPin (GPIOC, GPIO_PIN_4) != 1); //РїС‹С‚Р°РµРјСЃСЏ Р·Р°РїРёСЃР°С‚СЊ Р·РЅР°С‡РµРЅРёРµ РІ SPI, РїРѕРєР° lock detect РЅРµ СЃС‚Р°РЅРµС‚ СЂР°РІРµРЅ 1
 }
 
 #ifdef USE_FULL_ASSERT
